@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<title>BusDash</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --card: #ffffff;
+    --text: #1d1f22;
+    --muted: #6b6f76;
+    --line: #e3e0da;
+    --accent: #1f8a5b;
+    --accent-soft: #e3f3ea;
+    --danger: #b3362b;
+    --track: #cfcbc3;
+    --focus: #2d6cdf;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181b;
+      --card: #202327;
+      --text: #eceae6;
+      --muted: #9a9ea5;
+      --line: #30343a;
+      --accent: #3fbf86;
+      --accent-soft: #1d3329;
+      --danger: #ef6b5f;
+      --track: #464b52;
+      --focus: #7aa7ff;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  main { max-width: 960px; margin: 0 auto; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 20px; }
+  h1 { font-size: 1.5rem; margin: 0; letter-spacing: -.01em; }
+  h1 small { display: block; font-size: .875rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .conn { display: flex; align-items: center; gap: 8px; font-size: .875rem; color: var(--muted); white-space: nowrap; }
+  .conn::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+  .conn.offline::before { background: var(--danger); }
+
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  @media (max-width: 599px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 14px 14px 14px 12px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 76px;
+    transition: border-color .15s, background-color .15s;
+  }
+  .card.on { border-color: var(--accent); background: linear-gradient(0deg, var(--accent-soft), var(--accent-soft)) , var(--card); }
+  .num {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-weight: 700; font-variant-numeric: tabular-nums;
+    background: var(--bg); color: var(--muted); border: 1px solid var(--line);
+  }
+  .card.on .num { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .info { min-width: 0; }
+  .name-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+  .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .state { font-size: .8125rem; color: var(--muted); }
+  .card.on .state { color: var(--accent); font-weight: 600; }
+
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .icon-btn {
+    flex: none; border: 0; background: none; cursor: pointer; color: var(--muted);
+    width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--text); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .switch {
+    flex: none; cursor: pointer; border: 0; padding: 0;
+    width: 60px; height: 34px; border-radius: 17px; background: var(--track);
+    position: relative; transition: background-color .15s;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 28px; height: 28px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s;
+  }
+  .switch[aria-checked="true"] { background: var(--accent); }
+  .switch[aria-checked="true"]::after { transform: translateX(26px); }
+  .switch:disabled { opacity: .6; cursor: progress; }
+
+  /* Bewerken */
+  .edit { grid-column: 2 / 4; display: grid; gap: 8px; }
+  .edit input {
+    width: 100%; font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px;
+  }
+  .edit input:focus { outline: 2px solid var(--focus); outline-offset: 0; border-color: transparent; }
+  .edit-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--line); background: var(--card); border-radius: 8px;
+    padding: 0 14px; min-height: 40px; cursor: pointer; font-weight: 600;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.danger { color: var(--danger); margin-left: auto; }
+
+  .add {
+    border: 2px dashed var(--line); border-radius: 14px; background: none; cursor: pointer;
+    min-height: 76px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    color: var(--muted); font-weight: 600;
+  }
+  .add:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .add .plus { font-size: 1.75rem; line-height: 1; font-weight: 400; }
+  .add:disabled { cursor: default; opacity: .7; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom));
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px;
+    font-size: .9375rem; max-width: calc(100% - 32px); transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>BusDash <small>Relais</small></h1>
+    <span class="conn" id="conn" role="status">Verbinden…</span>
+  </header>
+  <div class="grid" id="grid" aria-live="polite"></div>
+</main>
+<div class="toast" id="toast" role="alert"></div>
+
+<script>
+(() => {
+  const POLL_MS = 3000;
+  const grid = document.getElementById('grid');
+  const conn = document.getElementById('conn');
+  const toastEl = document.getElementById('toast');
+
+  let data = null;          // laatste antwoord van de server
+  let editing = null;       // kanaal waarvan de naam bewerkt wordt
+  let busy = false;         // verzoek onderweg: niet tussendoor verversen
+
+  const pencil = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+
+  function el(tag, props = {}, ...children) {
+    const node = Object.assign(document.createElement(tag), props);
+    for (const c of children) node.append(c);
+    return node;
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+  }
+
+  function setOnline(ok) {
+    conn.textContent = ok ? 'Verbonden' : 'Geen verbinding';
+    conn.classList.toggle('offline', !ok);
+  }
+
+  async function api(path, options) {
+    const res = await fetch('api/relays' + path, options);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || ('Fout ' + res.status));
+    return body;
+  }
+
+  async function action(channel, act, body) {
+    busy = true;
+    try {
+      data = await api('/' + channel + '/' + act, {
+        method: 'POST',
+        headers: body === undefined ? {} : { 'Content-Type': 'text/plain; charset=utf-8' },
+        body
+      });
+      setOnline(true);
+      return true;
+    } catch (e) {
+      toast(e instanceof TypeError ? 'Geen verbinding met de Pi' : e.message);
+      if (e instanceof TypeError) setOnline(false);
+      return false;
+    } finally {
+      busy = false;
+      render();
+    }
+  }
+
+  function relayCard(r) {
+    const card = el('div', { className: 'card' + (r.on ? ' on' : '') });
+    card.dataset.channel = r.channel;
+    const num = el('div', { className: 'num', textContent: r.channel, title: 'Kanaal ' + r.channel });
+
+    if (editing === r.channel) {
+      const input = el('input', {
+        type: 'text', value: r.name, maxLength: data.maxNameLength,
+        autocomplete: 'off', enterKeyHint: 'done'
+      });
+      input.setAttribute('aria-label', 'Naam van relais ' + r.channel);
+      const save = async () => {
+        const name = input.value.trim();
+        if (!name) { toast('Naam mag niet leeg zijn'); input.focus(); return; }
+        if (name === r.name) { editing = null; render(); return; }
+        if (await action(r.channel, 'name', name)) { editing = null; render(); }
+      };
+      const cancel = () => { editing = null; render(); };
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') cancel();
+      });
+      const remove = el('button', { className: 'btn danger', type: 'button', textContent: 'Verwijderen' });
+      remove.addEventListener('click', async () => {
+        if (!confirm('"' + r.name + '" verwijderen uit het dashboard? Het relais gaat dan uit.')) return;
+        editing = null;
+        await action(r.channel, 'hide');
+      });
+      const saveBtn = el('button', { className: 'btn primary', type: 'button', textContent: 'Opslaan' });
+      saveBtn.addEventListener('click', save);
+      const cancelBtn = el('button', { className: 'btn', type: 'button', textContent: 'Annuleren' });
+      cancelBtn.addEventListener('click', cancel);
+
+      card.append(num, el('div', { className: 'edit' }, input, el('div', { className: 'edit-actions' }, saveBtn, cancelBtn, remove)));
+      requestAnimationFrame(() => { input.focus(); input.select(); });
+      return card;
+    }
+
+    const editBtn = el('button', { className: 'icon-btn', type: 'button', innerHTML: pencil, title: 'Naam wijzigen' });
+    editBtn.setAttribute('aria-label', 'Naam van ' + r.name + ' wijzigen');
+    editBtn.addEventListener('click', () => { editing = r.channel; render(); });
+
+    const sw = el('button', { className: 'switch', type: 'button' });
+    sw.setAttribute('role', 'switch');
+    sw.setAttribute('aria-checked', String(r.on));
+    sw.setAttribute('aria-label', r.name);
+    sw.addEventListener('click', async () => {
+      sw.disabled = true;
+      sw.setAttribute('aria-checked', String(!r.on)); // direct tonen, server bevestigt
+      await action(r.channel, r.on ? 'off' : 'on');
+    });
+
+    card.append(
+      num,
+      el('div', { className: 'info' },
+        el('div', { className: 'name-row' }, el('span', { className: 'name', textContent: r.name, title: r.name }), editBtn),
+        el('div', { className: 'state', textContent: r.on ? 'Aan' : 'Uit' })),
+      sw);
+    return card;
+  }
+
+  function addButton(visibleCount) {
+    const next = data.relays.find(r => !r.visible);
+    const btn = el('button', { className: 'add', type: 'button' });
+    if (!next) {
+      btn.disabled = true;
+      btn.append('Alle ' + data.max + ' relais in gebruik');
+      return btn;
+    }
+    btn.append(el('span', { className: 'plus', textContent: '+' }),
+               el('span', { textContent: 'Relais toevoegen (' + visibleCount + '/' + data.max + ')' }));
+    btn.setAttribute('aria-label', 'Relais ' + next.channel + ' toevoegen');
+    btn.addEventListener('click', async () => {
+      if (await action(next.channel, 'show')) { editing = next.channel; render(); }
+    });
+    return btn;
+  }
+
+  function render() {
+    if (!data) return;
+    const visible = data.relays.filter(r => r.visible);
+    grid.replaceChildren(...visible.map(relayCard), addButton(visible.length));
+  }
+
+  async function refresh() {
+    if (busy || editing !== null) return; // niet storen tijdens schakelen of typen
+    try {
+      data = await api('');
+      setOnline(true);
+      render();
+    } catch (e) {
+      setOnline(false);
+      if (!data) grid.replaceChildren(el('p', { className: 'empty', textContent: 'Kan de relais niet ophalen. Opnieuw proberen…' }));
+    }
+  }
+
+  refresh();
+  setInterval(refresh, POLL_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+})();
+</script>
+</body>
+</html>
