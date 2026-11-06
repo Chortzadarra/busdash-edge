@@ -1,4 +1,7 @@
-# systemd-service: start busdash-edge automatisch bij het opstarten van de Pi.
+# systemd-service: start het BusDash-dashboard automatisch bij het opstarten van de Pi.
+#
+# Eerst één keer een gebruiker aanmaken (als dezelfde gebruiker als User= hieronder):
+#   java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --set-password <naam>
 #
 # Installeren:
 #   sudo cp busdash-edge.service /etc/systemd/system/
@@ -7,18 +10,22 @@
 # Logs bekijken:
 #   journalctl -u busdash-edge -f
 #
-# Pas User, het pad naar de jar en de poort aan. De vaste poortnaam vind je met:
+# Pas User, het pad naar de jar en de twee poorten aan. De vaste poortnamen vind je met:
 #   ls /dev/serial/by-id/
+# (twee VE.Direct-kabels: aan het serienummer zie je welke bij de BMV en welke bij de MPPT hoort)
 
 [Unit]
-Description=BusDash edge - Victron BMV uitlezen via VE.Direct
-After=multi-user.target
+Description=BusDash edge - dashboard voor accu, zon en relais
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 User=pi
-# dialout: seriële poort (BMV), gpio: relaisbord
+# dialout: seriële poorten (BMV en MPPT), gpio: relaisbord
 SupplementaryGroups=dialout gpio
-ExecStart=/usr/bin/java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VEXXXXXX-if00-port0
+ExecStart=/usr/bin/java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --dashboard \
+    --bmv-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE111111-if00-port0 \
+    --mppt-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE222222-if00-port0
 Restart=on-failure
 RestartSec=5
 
