@@ -1,0 +1,25 @@
+# systemd-service: start busdash-edge automatisch bij het opstarten van de Pi.
+#
+# Installeren:
+#   sudo cp busdash-edge.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now busdash-edge
+# Logs bekijken:
+#   journalctl -u busdash-edge -f
+#
+# Pas User, het pad naar de jar en de poort aan. De vaste poortnaam vind je met:
+#   ls /dev/serial/by-id/
+
+[Unit]
+Description=BusDash edge - Victron BMV uitlezen via VE.Direct
+After=multi-user.target
+
+[Service]
+User=pi
+Group=dialout
+ExecStart=/usr/bin/java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VEXXXXXX-if00-port0
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

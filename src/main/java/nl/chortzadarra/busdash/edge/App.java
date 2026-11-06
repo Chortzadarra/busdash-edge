@@ -40,7 +40,7 @@ public final class App {
         while (true) {
             monitor.latestReading().ifPresentOrElse(
                     r -> System.out.println(format(r)),
-                    () -> System.out.println("Wachten op geldige data..."));
+                    () -> System.out.println("Geen actuele data (wachten op BMV)..."));
             Thread.sleep(PRINT_INTERVAL_MS);
         }
     }
