@@ -1,7 +1,7 @@
 # systemd-service: start het BusDash-dashboard automatisch bij het opstarten van de Pi.
 #
 # Eerst één keer een gebruiker aanmaken (als dezelfde gebruiker als User= hieronder):
-#   java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --set-password <naam>
+#   java -jar /home/ortzadarra/busdash-edge-0.1.0-SNAPSHOT.jar --set-password <naam>
 #
 # Installeren:
 #   sudo cp busdash-edge.service /etc/systemd/system/
@@ -20,10 +20,10 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=pi
+User=ortzadarra
 # dialout: seriële poorten (BMV en MPPT), gpio: relaisbord
 SupplementaryGroups=dialout gpio
-ExecStart=/usr/bin/java -jar /home/pi/busdash-edge-0.1.0-SNAPSHOT.jar --dashboard \
+ExecStart=/usr/bin/java -jar /home/ortzadarra/busdash-edge-0.1.0-SNAPSHOT.jar --dashboard \
     --bmv-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE111111-if00-port0 \
     --mppt-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE222222-if00-port0
 Restart=on-failure
