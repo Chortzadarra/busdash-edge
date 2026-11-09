@@ -82,8 +82,10 @@
   .scene[data-mood="awake"] .m-awake,
   .scene[data-mood="sleeping"] .m-sleeping { opacity: 1; }
 
-  .scene .body { fill: #f3f5f7; transition: fill .8s; }
-  .scene[data-mood="sleeping"] .body { fill: #aeb9cc; }
+  .scene .body { fill: #d3d8dd; transition: fill .8s; }
+  .scene[data-mood="sleeping"] .body { fill: #8e9ab0; }
+  .scene .tint { fill: #23282f; transition: fill .8s; }
+  .scene[data-mood="sleeping"] .tint { fill: #151a24; }
   .scene .glass { fill: #8fb7d6; transition: fill .8s; }
   .scene[data-mood="sunny"] .glass { fill: #a9d4f2; }
   .scene[data-mood="sleeping"] .glass { fill: #2c3d5e; }
@@ -281,9 +283,9 @@
 
       <!-- zonnestralen richting de panelen -->
       <g class="m m-sunny" stroke="#ffcf33" stroke-width="2.5" stroke-linecap="round" fill="none">
-        <path class="beam" d="M84,52 Q130,40 160,58"/>
-        <path class="beam" d="M86,40 Q170,24 230,56" style="animation-delay:-.4s"/>
-        <path class="beam" d="M82,30 Q210,4 300,56" style="animation-delay:-.8s"/>
+        <path class="beam" d="M84,52 Q130,40 162,60"/>
+        <path class="beam" d="M86,40 Q160,22 204,59" style="animation-delay:-.4s"/>
+        <path class="beam" d="M82,30 Q190,4 244,59" style="animation-delay:-.8s"/>
       </g>
 
       <!-- grond -->
@@ -291,44 +293,61 @@
       <rect class="road" x="-800" y="176" width="2000" height="80"/>
       <path d="M-800,189 H1200" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-dasharray="16 14"/>
 
-      <!-- ===== Bus (hoge camperbus, zijaanzicht, neus rechts) ===== -->
+      <!-- ===== Bus: zilveren Sprinter W906 hoge camperbus, zijaanzicht, neus rechts ===== -->
       <g transform="translate(116 37) scale(.8)">
         <ellipse cx="172" cy="174" rx="168" ry="5" fill="#000" opacity=".18"/>
         <g class="bob">
-          <!-- zonnepanelen op het dak -->
-          <g stroke="#2b3440" stroke-width="1.5">
-            <path d="M44,46 v-6 M126,46 v-6 M150,46 v-6 M232,46 v-6" stroke-width="2.5"/>
-            <rect x="34" y="30" width="102" height="10" rx="2" fill="#1f3c6e"/>
-            <rect x="142" y="30" width="102" height="10" rx="2" fill="#1f3c6e"/>
-            <path d="M59,30 v10 M85,30 v10 M110,30 v10 M167,30 v10 M193,30 v10 M218,30 v10" stroke="#5b7fb8" stroke-width="1"/>
+          <!-- dak: antenne, dakluik/airco voorin en één zwart zonnepaneel achterin -->
+          <path d="M256,47 L262,24" stroke="#2b3440" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M184,45 Q186,34 200,32 H214 Q226,33 230,45 Z" fill="#2a2f37" stroke="#1d2229" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M192,40 Q196,36 206,35.5" stroke="#5c6672" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+          <g stroke="#1d2229" stroke-width="1.5">
+            <path d="M50,46 v-5 M164,46 v-5" stroke-width="2.5"/>
+            <rect x="38" y="33" width="134" height="8" rx="1.5" fill="#22272e"/>
+            <path d="M71,33 v8 M105,33 v8 M139,33 v8" stroke="#465060" stroke-width="1"/>
           </g>
           <g class="m m-sunny" fill="#fff">
-            <path class="sparkle" d="M70,27 l1.5,4 4,1.5 -4,1.5 -1.5,4 -1.5,-4 -4,-1.5 4,-1.5z"/>
-            <path class="sparkle b" d="M178,26 l1.5,4 4,1.5 -4,1.5 -1.5,4 -1.5,-4 -4,-1.5 4,-1.5z"/>
-            <path class="sparkle c" d="M226,28 l1.2,3 3,1.2 -3,1.2 -1.2,3 -1.2,-3 -3,-1.2 3,-1.2z"/>
+            <path class="sparkle" d="M64,26 l1.5,4 4,1.5 -4,1.5 -1.5,4 -1.5,-4 -4,-1.5 4,-1.5z"/>
+            <path class="sparkle b" d="M118,25 l1.5,4 4,1.5 -4,1.5 -1.5,4 -1.5,-4 -4,-1.5 4,-1.5z"/>
+            <path class="sparkle c" d="M158,27 l1.2,3 3,1.2 -3,1.2 -1.2,3 -1.2,-3 -3,-1.2 3,-1.2z"/>
           </g>
 
-          <!-- carrosserie -->
-          <path class="body" stroke="#2b3440" stroke-width="2.5" stroke-linejoin="round"
-                d="M10,46 H252 Q266,46 273,58 L298,104 Q322,110 334,121 Q342,130 342,149 V166 Q342,172 336,172 H8 Q2,172 2,166 V54 Q2,46 10,46 Z"/>
-          <!-- beschermstrip en onderkant -->
-          <path d="M2,130 H298" stroke="#4a5462" stroke-width="5"/>
-          <path d="M2,160 H342 V166 Q342,172 336,172 H8 Q2,172 2,166 Z" fill="#3a4350"/>
-          <!-- deuren -->
-          <path d="M140,52 V158 M224,52 V158 M240,50 V158" stroke="#2b3440" stroke-width="1.3" opacity=".55"/>
-          <rect x="214" y="110" width="7" height="3" rx="1.5" fill="#2b3440" opacity=".7"/>
-          <rect x="256" y="110" width="9" height="3" rx="1.5" fill="#2b3440" opacity=".7"/>
-          <!-- ramen -->
-          <rect class="glass" x="30" y="62" width="78" height="34" rx="6" stroke="#2b3440" stroke-width="2"/>
-          <rect class="glass" x="150" y="62" width="64" height="34" rx="6" stroke="#2b3440" stroke-width="2"/>
-          <path class="glass" d="M248,58 H268 Q272,58 274,62 L294,100 H248 Z" stroke="#2b3440" stroke-width="2" stroke-linejoin="round"/>
-          <path class="glint" d="M36,90 L52,66 M156,90 L170,68" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <!-- carrosserie (zilver) -->
+          <clipPath id="bus-shape"><path d="M10,46 H252 Q266,46 273,58 L298,104 Q322,110 334,121 Q342,130 342,149 V166 Q342,172 336,172 H8 Q2,172 2,166 V54 Q2,46 10,46 Z"/></clipPath>
+          <path class="body" d="M10,46 H252 Q266,46 273,58 L298,104 Q322,110 334,121 Q342,130 342,149 V166 Q342,172 336,172 H8 Q2,172 2,166 V54 Q2,46 10,46 Z"/>
+          <g clip-path="url(#bus-shape)">
+            <!-- donkergrijze band onderlangs, met zilveren sierlijst eronder -->
+            <rect x="0" y="134" width="302" height="16" fill="#4b535e"/>
+            <rect x="0" y="162" width="346" height="12" fill="#3a4049"/>
+          </g>
+          <path class="body-line" fill="none" stroke="#2b3440" stroke-width="2.5" stroke-linejoin="round" d="M10,46 H252 Q266,46 273,58 L298,104 Q322,110 334,121 Q342,130 342,149 V166 Q342,172 336,172 H8 Q2,172 2,166 V54 Q2,46 10,46 Z"/>
+          <!-- witte luifelcassette langs de dakrand -->
+          <rect x="16" y="40" width="236" height="9" rx="4.5" fill="#f5f7f9" stroke="#2b3440" stroke-width="1.6"/>
+          <path d="M22,46.5 H246" stroke="#c9d0d7" stroke-width="1.2"/>
+          <!-- deuren: schuifdeur en bestuurdersdeur -->
+          <path d="M146,52 V160 M238,50 V160" stroke="#2b3440" stroke-width="1.3" opacity=".55"/>
+          <path d="M146,58 H236" stroke="#2b3440" stroke-width="1" opacity=".25"/>
+          <rect x="226" y="108" width="8" height="3" rx="1.5" fill="#2b3440" opacity=".75"/>
+          <rect x="250" y="108" width="9" height="3" rx="1.5" fill="#2b3440" opacity=".75"/>
+          <!-- ramen: klein rond camperraampje achter, groot getint schuifdeurraam, cabineraam -->
+          <rect class="tint" x="26" y="64" width="64" height="18" rx="8" stroke="#2b3440" stroke-width="2"/>
+          <rect class="tint" x="152" y="62" width="80" height="40" rx="4" stroke="#2b3440" stroke-width="2"/>
+          <path class="glass" d="M246,58 H268 Q272,58 274,62 L294,100 H246 Z" stroke="#2b3440" stroke-width="2" stroke-linejoin="round"/>
+          <path class="glint" d="M160,96 L178,68 M34,79 L42,68 M252,94 L262,66" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
           <!-- spiegel -->
           <rect x="286" y="94" width="9" height="15" rx="2.5" fill="#2b3440"/>
-          <!-- achterlicht -->
-          <rect x="2" y="104" width="5" height="18" rx="1.5" fill="#d94b3d"/>
-          <!-- voorbumper en neus -->
-          <rect x="300" y="150" width="44" height="20" rx="5" fill="#3a4350"/>
+          <!-- achterlicht (rood met wit) en oranje zijmarkeringen -->
+          <rect x="2" y="96" width="5" height="20" rx="1.5" fill="#d94b3d"/>
+          <rect x="2" y="116" width="5" height="8" rx="1.5" fill="#eef0f2"/>
+          <rect x="112" y="140" width="6" height="3.5" rx="1.5" fill="#f39a2b"/>
+          <rect x="230" y="140" width="6" height="3.5" rx="1.5" fill="#f39a2b"/>
+          <rect x="306" y="140" width="6" height="3.5" rx="1.5" fill="#f39a2b"/>
+          <!-- zwarte voorbumper -->
+          <rect x="300" y="150" width="44" height="20" rx="5" fill="#262b32"/>
+          <!-- rvs sidestep tussen de wielen -->
+          <path d="M108,158 v6 M232,158 v6" stroke="#6b737d" stroke-width="2.5"/>
+          <path d="M100,165 H240" stroke="#2b3440" stroke-width="6" stroke-linecap="round"/>
+          <path d="M100,165 H240" stroke="#dfe3e7" stroke-width="3.6" stroke-linecap="round"/>
 
           <!-- gezicht: koplamp is het oog (iets vergroot, zodat het ook op een telefoon goed te zien is) -->
           <g transform="translate(325 131) scale(1.2) translate(-325 -131)">
@@ -357,11 +376,11 @@
           </g>
         </g>
 
-        <!-- wielen (staan stil, de bus "ademt" erboven) -->
+        <!-- wielen met stalen velgen (staan stil, de bus "ademt" erboven) -->
         <path d="M42,172 A28,28 0 0 1 98,172 Z M244,172 A28,28 0 0 1 300,172 Z" fill="#2b3440"/>
         <g>
-          <circle cx="70" cy="172" r="21" fill="#20252c"/><circle cx="70" cy="172" r="11" fill="#c5cbd3"/><circle cx="70" cy="172" r="4" fill="#5c6470"/>
-          <circle cx="272" cy="172" r="21" fill="#20252c"/><circle cx="272" cy="172" r="11" fill="#c5cbd3"/><circle cx="272" cy="172" r="4" fill="#5c6470"/>
+          <circle cx="70" cy="172" r="21" fill="#20252c"/><circle cx="70" cy="172" r="12.5" fill="#a9b0b8" stroke="#7c848e" stroke-width="1.5"/><circle cx="77.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="73.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="66.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="63.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="66.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="73.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="70" cy="172" r="4" fill="#d5dade" stroke="#7c848e" stroke-width="1"/>
+          <circle cx="272" cy="172" r="21" fill="#20252c"/><circle cx="272" cy="172" r="12.5" fill="#a9b0b8" stroke="#7c848e" stroke-width="1.5"/><circle cx="279.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="275.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="268.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="265.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="268.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="275.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="272" cy="172" r="4" fill="#d5dade" stroke="#7c848e" stroke-width="1"/>
         </g>
 
         <!-- Zzz -->
