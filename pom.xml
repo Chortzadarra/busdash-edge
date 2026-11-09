@@ -14,6 +14,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>nl.chortzadarra.busdash.edge.App</main.class>
+        <pi4j.version>3.0.2</pi4j.version>
     </properties>
 
     <dependencyManagement>
@@ -33,6 +34,30 @@
             <groupId>com.fazecast</groupId>
             <artifactId>jSerialComm</artifactId>
             <version>2.11.0</version>
+        </dependency>
+
+        <!-- GPIO voor het relaisbord: Pi4J met libgpiod (werkt op alle Pi's, ook de Pi 5) -->
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-core</artifactId>
+            <version>${pi4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-raspberrypi</artifactId>
+            <version>${pi4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-gpiod</artifactId>
+            <version>${pi4j.version}</version>
+        </dependency>
+        <!-- Pi4J logt via SLF4J; zonder deze binding verdwijnen de meldingen -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.16</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -63,6 +88,8 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
                                 </transformer>
+                                <!-- Pi4J vindt zijn plugins via META-INF/services: die bestanden samenvoegen, niet overschrijven -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>

@@ -9,7 +9,10 @@ public interface BatteryMonitor extends AutoCloseable {
 
     void start();
 
-    /** De laatst bekende meting, of leeg als er nog geen geldige data binnen is. */
+    /**
+     * De laatst bekende meting, of leeg als er nog geen geldige data binnen is of als de
+     * laatste meting te oud is (bijvoorbeeld omdat de kabel los is).
+     */
     Optional<BatteryReading> latestReading();
 
     @Override
