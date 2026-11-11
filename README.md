@@ -1,108 +1,112 @@
-# busdash-edge
+# BusDash edge
 
-Edge-applicatie voor de Raspberry Pi in de bus. Leest de Victron BMV-712 (accu) en SmartSolar MPPT (zon)
-uit via VE.Direct, stuurt het Waveshare-relaisbord aan en toont alles op één webdashboard met login.
+Een dashboard voor mijn camperbus (Mercedes Sprinter), draaiend op een Raspberry Pi in de bus.
+Het leest de accumonitor en de zonnelaadregelaar van Victron uit, schakelt 12V-verbruikers via een
+relaisbord en laat alles zien op één webpagina die op telefoon en computer werkt.
 
-## Starten in IntelliJ
-1. *File → Open* → kies deze map (de `pom.xml` wordt automatisch herkend).
-2. Draai de tests: rechtsklik op `src/test/java` → *Run 'All Tests'*.
-3. Draai `App` met programma-argumenten `--dashboard --fake --no-login` en open `http://localhost:8080/`.
-   Alles is dan gesimuleerd; een "dag" duurt 3 minuten, zodat je de bus ziet slapen, wakker worden
-   en zijn zonnebril opzetten.
+![Dashboard](docs/dashboard-desktop.png)
 
-## Dashboard
-Eén pagina, geschikt voor telefoon en computer:
+De cartoonbus laat in één oogopslag zien hoe het ervoor staat: **zonnebril op** als de panelen flink
+leveren, **slapend** 's nachts en **wakker** als er weinig gebeurt.
 
-1. **De bus** met een stemming:
-   - **zonnebril op** als de panelen flink leveren (vanaf 100 W, aan te passen met `--sunny-watts`);
-   - **slapen** als het nacht is (0 W en bijna geen paneelspanning);
-   - **tevreden en wakker** als er niet zoveel gebeurt.
-   Er zit wat speling in (hysterese), zodat hij bij een wolkje niet steeds wisselt.
-2. **Accu (BMV-712)**: laadpercentage, spanning, stroom, vermogen, resterende tijd, verbruikte Ah,
-   en temperatuur of startaccu als de aux-ingang daarvoor is ingesteld.
-3. **Zon (SmartSolar MPPT)**: paneelvermogen en -spanning, laadstroom, laadstatus, opbrengst en
-   hoogste vermogen vandaag.
-4. **Relais**: vaste nummers 1 t/m 8 (= CH1..CH8), eigen naam via het potloodje. Standaard is alleen
-   relais 1 zichtbaar; met **+** voeg je er een toe, tot maximaal 8. Via het potloodje kun je een relais ook
-   weer verwijderen (het gaat dan uit).
+## Wat het doet
+- **Accu (Victron BMV-712):** laadpercentage, spanning, stroom, vermogen, resterende tijd, verbruikte Ah,
+  temperatuur of startaccu.
+- **Zon (Victron SmartSolar MPPT):** paneelvermogen en -spanning, laadstroom, laadstatus, opbrengst
+  en hoogste vermogen vandaag.
+- **Relais (Waveshare RPi Relay Board (B), 8 kanalen):** aan/uit vanaf de telefoon, met eigen namen.
+  Begint met één relais, met **+** voeg je er tot acht toe.
+- **Login** met gehashte wachtwoorden en blokkering bij te veel foute pogingen.
 
-```bash
-java -jar busdash-edge-0.1.0-SNAPSHOT.jar --dashboard \
-  --bmv-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE111111-if00-port0 \
-  --mppt-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_VE222222-if00-port0
+## Architectuur
+
+```mermaid
+flowchart LR
+    BMV[BMV-712<br/>accumonitor] -- VE.Direct USB --> PI
+    MPPT[SmartSolar MPPT<br/>laadregelaar] -- VE.Direct USB --> PI
+    PI[Raspberry Pi<br/>Java 21-app] -- GPIO --> REL[Relaisbord<br/>8 kanalen]
+    REL --> LOADS[12V-verbruikers]
+    PI -- HTTP + JSON --> PHONE[Telefoon / laptop<br/>webdashboard]
 ```
-Laat je `--bmv-port` of `--mppt-port` weg, dan staat dat blok op "Niet aangesloten".
-Andere webpoort: `--http-port 8081`. Instellingen staan in `~/.busdash` (aan te passen met `--data-dir`).
 
-### Login
-Het dashboard start alleen als er een gebruiker is. Aanmaken (of wachtwoord wijzigen):
-```bash
-java -jar busdash-edge-0.1.0-SNAPSHOT.jar --set-password jeroen
-```
-- Wachtwoorden worden alleen als PBKDF2-hash opgeslagen in `~/.busdash/users.properties`.
-- Na inloggen blijf je 30 dagen ingelogd (cookie, HttpOnly en SameSite=Strict). Na een herstart van de
-  app moet je opnieuw inloggen.
-- Na 10 foute pogingen binnen 15 minuten wordt dat adres 5 minuten geblokkeerd.
-- Komt het verzoek via HTTPS binnen achter een reverse proxy (`X-Forwarded-Proto: https`), dan krijgt de
-  cookie ook de vlag `Secure`.
-- `--no-login` is alleen bedoeld voor ontwikkelen op je laptop.
+| Package     | Verantwoordelijkheid |
+|-------------|----------------------|
+| `vedirect/` | VE.Direct-protocol: streaming parser met checksumcontrole, seriële bron met herverbinden |
+| `battery/`  | BMV-712: `BatteryMonitor`-interface met een echte en een gesimuleerde implementatie |
+| `solar/`    | SmartSolar MPPT: `SolarCharger`-interface met een echte en een gesimuleerde implementatie |
+| `status/`   | Stemming van de bus (`MoodTracker`) |
+| `relay/`    | `RelayBoard`-interface, Waveshare-aansturing via Pi4J/libgpiod, namen en zichtbaarheid |
+| `web/`      | Webserver, JSON-API, login (`Auth`, `UserStore`, `PasswordHasher`) |
 
-**Nog niet klaar voor internet.** Hosten op een eigen domein volgt later: dat moet via HTTPS (bijvoorbeeld
-een reverse proxy of tunnel). Zet poort 8080 niet zomaar open in je router.
+## Ontwerpkeuzes
+- **Weinig afhankelijkheden.** De webserver is de `HttpServer` uit de JDK en de JSON wordt met de hand
+  gemaakt. Alleen jSerialComm (seriële poort) en Pi4J (GPIO) zijn externe libraries. Het resultaat is
+  één jar die op de Pi alleen een JRE nodig heeft.
+- **Alle hardware achter een interface,** elk met een gesimuleerde variant. Met `--fake` draait de hele
+  app op een laptop zonder Pi of Victron-apparatuur. Een gesimuleerde dag duurt drie minuten, zodat je
+  alle stemmingen van de bus voorbij ziet komen.
+- **Robuust tegen de echte wereld.** De parser controleert de checksum van elk blok en gooit kapotte data
+  weg. Valt een kabel weg, dan blijft de app opnieuw verbinden (wachttijd oplopend van 2 naar 30 s).
+  Is een meting ouder dan 10 seconden, dan toont het dashboard "Geen actuele gegevens" in plaats van een
+  oude waarde.
+- **Hysterese in de stemming,** zodat de bus bij een voorbijtrekkend wolkje niet steeds wisselt.
+- **Veilig standaardgedrag.** Wachtwoorden worden als PBKDF2-hash opgeslagen. De sessiecookie is
+  `HttpOnly` en `SameSite=Strict` en wordt `Secure` achter HTTPS. Schrijvende API-aanroepen vereisen een
+  eigen header tegen CSRF. Na 10 foute pogingen binnen 15 minuten wordt een adres 5 minuten geblokkeerd.
+  Bij afsluiten gaan alle relais uit.
+- **59 unittests** voor de parser, de BMV- en MPPT-logica, de stemming, de relais, de login en de
+  webserver. Ze draaien zonder hardware.
 
-## Met echte hardware
-- `--list-ports` toont de beschikbare seriële poorten.
-- `--port /dev/ttyUSB0` (Pi/Linux) of `--port COM3` (Windows) leest alleen de BMV uit naar de console.
+## Zelf proberen
+Vereist Java 21 en Maven.
 
-Gebruik op de Pi bij voorkeur de vaste namen uit `/dev/serial/by-id/` in plaats van `/dev/ttyUSB0`:
-met twee VE.Direct-kabels (BMV en MPPT) kan de nummering anders wisselen.
-
-### Naar de Pi
 ```bash
 mvn package
-scp target/busdash-edge-0.1.0-SNAPSHOT.jar pi@<ip>:~/
+java -jar target/busdash-edge-0.1.0-SNAPSHOT.jar --dashboard --fake --no-login
 ```
-De gebruiker moet in de groepen `dialout` (seriële poorten) en `gpio` (relais) zitten:
-`sudo usermod -aG dialout,gpio $USER` (daarna opnieuw inloggen).
+Open daarna `http://localhost:8080/`. Alles is gesimuleerd; `--no-login` is alleen bedoeld voor lokaal
+ontwikkelen. Tests draaien met `mvn test`.
 
-### Automatisch starten
-In `deploy/busdash-edge.service` staat een systemd-service; installatie-instructies staan bovenin dat bestand.
+## Installatie op de Raspberry Pi
+Getest op een Raspberry Pi 3B+ met Debian 13 en OpenJDK 21.
 
-### Gedrag bij storingen
-- Is een poort bij het starten (nog) niet beschikbaar, of valt een kabel weg, dan blijft de app
-  opnieuw verbinden (wachttijd oplopend van 2 tot 30 seconden).
-- Is de laatste geldige meting ouder dan 10 seconden, dan toont het dashboard "Geen actuele gegevens"
-  in plaats van een verouderde waarde.
+1. Kopieer de jar naar de Pi en zet de gebruiker in de groepen `dialout` (seriële poorten) en `gpio`
+   (relais): `sudo usermod -aG dialout,gpio $USER`, daarna opnieuw inloggen.
+2. Maak een dashboardgebruiker aan (vraagt om een wachtwoord):
+   ```bash
+   java -jar busdash-edge-0.1.0-SNAPSHOT.jar --set-password <naam>
+   ```
+3. Zoek de vaste namen van de VE.Direct-kabels op met `ls /dev/serial/by-id/`. Elke kabel heeft een eigen
+   serienummer, dus de BMV en de MPPT kunnen niet per ongeluk van poort wisselen.
+4. Start het dashboard:
+   ```bash
+   java -jar busdash-edge-0.1.0-SNAPSHOT.jar --dashboard \
+     --bmv-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_<serienr>-if00-port0 \
+     --mppt-port /dev/serial/by-id/usb-VictronEnergy_BV_VE_Direct_cable_<serienr>-if00-port0
+   ```
+   Laat je een poort weg, dan staat dat blok op "Niet aangesloten". Andere webpoort: `--http-port 8081`.
+   Instellingen staan in `~/.busdash` (aan te passen met `--data-dir`).
+5. Automatisch starten bij het opstarten: zie [`deploy/busdash-edge.service`](deploy/busdash-edge.service).
+   Installatie-instructies staan bovenin dat bestand.
 
-## Relaisbord (Waveshare RPi Relay Board (B), 8 kanalen)
-Aansturing via GPIO met Pi4J en libgpiod (werkt ook op de Pi 5).
-
-- `--relay-test` zet CH1 t/m CH8 één voor één een seconde aan. **Doe dit eerst zonder iets aangesloten**
-  en controleer dat het juiste relais klikt (LED op het bord), want de pinindeling
-  (BCM 5, 6, 13, 16, 19, 20, 21, 26) komt uit de Waveshare-documentatie.
+### Hulpmiddelen voor hardware
+- `--list-ports` toont de beschikbare seriële poorten.
+- `--port <poort>` leest alleen de BMV uit naar de console.
+- `--relay-test` zet CH1 t/m CH8 één voor één een seconde aan. Doe dit eerst zonder iets aangesloten.
 - `--relay-console` om met de hand te schakelen: `3 aan`, `3 uit`, `alles uit`, `status`, `stop`.
-- Voeg `--fake` toe om zonder Pi te testen, bijv. `--relay-console --fake`.
+  Met `--fake` erbij werkt het ook zonder Pi.
 
-Het bord is low-active (pin laag = relais aan); dat zit verstopt in `WaveshareRelayBoard`.
-Bij afsluiten of Ctrl+C gaan alle relais uit. Of een relais aan stond wordt niet bewaard.
-
-Klikken er relais aan tijdens het opstarten van de Pi, voordat de app draait? Zet de pinnen dan
-al vroeg hoog door deze regel toe te voegen aan `/boot/firmware/config.txt`:
+### Relaisbord
+Het bord gebruikt BCM-pinnen 5, 6, 13, 16, 19, 20, 21 en 26 en is low-active (pin laag = relais aan).
+Om te voorkomen dat relais kort aanspringen tijdens het opstarten van de Pi, voordat de app draait,
+voeg je deze regel toe aan `/boot/firmware/config.txt`:
 ```
 gpio=5,6,13,16,19,20,21,26=op,dh
 ```
-
-Let op: de contacten kunnen maximaal 30 V DC / 5 A (ohmse last) schakelen. Laat zwaardere of
-inductieve 12V-verbruikers (koelkast, omvormer, pomp) via een zwaarder relais of contactor lopen.
-
-## Structuur
-- `vedirect/` – protocol: streaming parser met checksum-validatie, seriële bron
-- `battery/` – BMV-712: `BatteryMonitor` met een echte en een fake implementatie
-- `solar/` – SmartSolar MPPT: `SolarCharger` met een echte en een fake implementatie (versnelde dag)
-- `status/` – stemming van de bus (`MoodTracker`)
-- `relay/` – `RelayBoard` met het echte Waveshare-bord en een fake, namen/zichtbaarheid, testconsole
-- `web/` – webserver (zit in de JDK), login (`Auth`, `UserStore`) en JSON-API; de pagina's staan in
-  `src/main/resources/dashboard/`
+De contacten kunnen maximaal 30 V DC / 5 A (ohmse last) schakelen. Laat zwaardere of inductieve
+verbruikers (koelkast, omvormer, pomp) via een zwaarder relais lopen en zet een zekering in elk circuit.
 
 ## Volgende stappen
-Hosten op een eigen domein (HTTPS) → eventueel MQTT/backend voor geschiedenis en grafieken.
+- Bereikbaar maken via een eigen domein met HTTPS (reverse proxy of tunnel). Zet poort 8080 niet zomaar
+  open in een router.
+- Geschiedenis en grafieken, bijvoorbeeld via MQTT naar een backend.
