@@ -7,7 +7,13 @@ relaisbord en laat alles zien op één webpagina die op telefoon en computer wer
 ![Dashboard](docs/dashboard-desktop.png)
 
 De cartoonbus laat in één oogopslag zien hoe het ervoor staat: **zonnebril op** als de panelen flink
-leveren, **slapend** 's nachts en **wakker** als er weinig gebeurt.
+leveren, **slapend** 's nachts en **wakker** als er weinig gebeurt. Zakt de temperatuur onder 3 °C,
+dan krijgt hij **een sjaal om**, ligt er ijs op de weg en sneeuw op het dak. Het **boompje** ernaast
+laat het seizoen zien: kaal in de winter, jong blad en bloesem in de lente, een volle kroon in de zomer
+en vallend blad in de herfst.
+
+Voor een demonstratie kun je seizoen en temperatuur in de adresbalk vastzetten, bijvoorbeeld
+`http://localhost:8080/?seizoen=winter&temp=-2` (seizoenen: `winter`, `lente`, `zomer`, `herfst`).
 
 ## Wat het doet
 - **Accu (Victron BMV-712):** laadpercentage, spanning, stroom, vermogen, resterende tijd, verbruikte Ah,
@@ -44,12 +50,13 @@ flowchart LR
   één jar die op de Pi alleen een JRE nodig heeft.
 - **Alle hardware achter een interface,** elk met een gesimuleerde variant. Met `--fake` draait de hele
   app op een laptop zonder Pi of Victron-apparatuur. Een gesimuleerde dag duurt drie minuten, zodat je
-  alle stemmingen van de bus voorbij ziet komen.
+  alle stemmingen van de bus voorbij ziet komen, inclusief een koude nacht.
 - **Robuust tegen de echte wereld.** De parser controleert de checksum van elk blok en gooit kapotte data
   weg. Valt een kabel weg, dan blijft de app opnieuw verbinden (wachttijd oplopend van 2 naar 30 s).
   Is een meting ouder dan 10 seconden, dan toont het dashboard "Geen actuele gegevens" in plaats van een
   oude waarde.
-- **Hysterese in de stemming,** zodat de bus bij een voorbijtrekkend wolkje niet steeds wisselt.
+- **Hysterese in de stemming en de kou,** zodat de bus bij een voorbijtrekkend wolkje of rond de
+  3 °C niet steeds wisselt.
 - **Veilig standaardgedrag.** Wachtwoorden worden als PBKDF2-hash opgeslagen. De sessiecookie is
   `HttpOnly` en `SameSite=Strict` en wordt `Secure` achter HTTPS. Schrijvende API-aanroepen vereisen een
   eigen header tegen CSRF. Na 10 foute pogingen binnen 15 minuten wordt een adres 5 minuten geblokkeerd.

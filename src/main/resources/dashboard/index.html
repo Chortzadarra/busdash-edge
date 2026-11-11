@@ -94,6 +94,44 @@
   .scene .grass { fill: #8cc06a; transition: fill .8s; }
   .scene[data-mood="sleeping"] .grass { fill: #2f4a3a; }
 
+  /* kou (onder 3 °C): ijs op de grond, sneeuw, ijspegels en een sjaal */
+  .scene .cold { opacity: 0; transition: opacity 1s ease; }
+  .scene[data-cold="true"] .cold { opacity: 1; }
+  .scene[data-cold="true"] .grass { fill: #dcebf2; }
+  .scene[data-cold="true"][data-mood="sleeping"] .grass { fill: #6f819b; }
+  .flake { animation: snow 7s linear infinite; }
+  .flake:nth-child(2n) { animation-duration: 9s; animation-delay: -3s; }
+  .flake:nth-child(3n) { animation-duration: 8s; animation-delay: -5.5s; }
+  @keyframes snow { from { transform: translate(0,-40px); } to { transform: translate(-14px,230px); } }
+  .scarf-flap { transform-box: fill-box; transform-origin: top left; animation: flap 2.6s ease-in-out infinite; }
+  @keyframes flap { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(5deg); } }
+  .scene[data-cold="true"][data-mood="awake"] .bob { animation: shiver 3s linear infinite; }
+  @keyframes shiver {
+    0%,60%,100% { transform: translateX(0); }
+    63%,69%,75%,81% { transform: translateX(-.8px); }
+    66%,72%,78%,84% { transform: translateX(.8px); }
+  }
+
+  /* boompje: laat het seizoen zien */
+  .scene .s { opacity: 0; transition: opacity 1s ease; }
+  .scene[data-season="winter"] .s-winter,
+  .scene[data-season="spring"] .s-spring,
+  .scene[data-season="summer"] .s-summer,
+  .scene[data-season="autumn"] .s-autumn { opacity: 1; }
+  .tree { transition: filter .8s; }
+  .scene[data-mood="sleeping"] .tree { filter: brightness(.5) saturate(.7); }
+  .sway { transform-box: fill-box; transform-origin: bottom center; animation: sway 6s ease-in-out infinite; }
+  @keyframes sway { 0%,100% { transform: rotate(-1deg); } 50% { transform: rotate(1.2deg); } }
+  .leaf-fall { animation: leaffall 7s ease-in infinite; }
+  .leaf-fall.b { animation-delay: -3.5s; animation-duration: 8s; }
+  @keyframes leaffall {
+    0% { transform: translate(0,0) rotate(0); opacity: 0; }
+    10% { opacity: 1; }
+    50% { transform: translate(8px,34px) rotate(160deg); }
+    90% { opacity: 1; }
+    100% { transform: translate(-4px,66px) rotate(320deg); opacity: 0; }
+  }
+
   .bob { animation: bob 3.2s ease-in-out infinite; }
   .scene[data-mood="sunny"] .bob { animation: bounce 1.1s ease-in-out infinite; }
   .scene[data-mood="sleeping"] .bob { animation: breathe 4.5s ease-in-out infinite; }
@@ -145,6 +183,7 @@
   /* ---------- Accu en zon ---------- */
   .stats { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
   @media (max-width: 639px) { .stats { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .scene * { animation: none !important; } }
   .stat { padding: 16px 18px 18px; display: grid; gap: 12px; align-content: start; }
   .stat-head { display: flex; align-items: center; gap: 10px; }
   .stat-head svg { width: 22px; height: 22px; flex: none; }
@@ -237,7 +276,7 @@
 
   <!-- ===================== De bus en zijn stemming ===================== -->
   <section class="card hero" aria-labelledby="mood-title">
-    <svg class="scene" id="scene" data-mood="awake" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet" role="img" aria-labelledby="mood-title">
+    <svg class="scene" id="scene" data-mood="awake" data-cold="false" data-season="summer" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet" role="img" aria-labelledby="mood-title">
       <defs>
         <linearGradient id="sky-sunny" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="200"><stop offset="0" stop-color="#4fb3f6"/><stop offset="1" stop-color="#cdeeff"/></linearGradient>
         <linearGradient id="sky-awake" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="200"><stop offset="0" stop-color="#9ebfd8"/><stop offset="1" stop-color="#e5edf2"/></linearGradient>
@@ -288,10 +327,88 @@
         <path class="beam" d="M82,30 Q190,4 244,59" style="animation-delay:-.8s"/>
       </g>
 
+      <!-- sneeuwvlokjes (koud) -->
+      <g class="cold" fill="#fff" opacity=".9">
+        <circle class="flake" cx="20" cy="10" r="1.6"/><circle class="flake" cx="70" cy="-10" r="1.2"/>
+        <circle class="flake" cx="110" cy="20" r="1.8"/><circle class="flake" cx="160" cy="0" r="1.3"/>
+        <circle class="flake" cx="205" cy="15" r="1.6"/><circle class="flake" cx="250" cy="-5" r="1.2"/>
+        <circle class="flake" cx="295" cy="12" r="1.8"/><circle class="flake" cx="340" cy="-8" r="1.4"/>
+        <circle class="flake" cx="385" cy="18" r="1.6"/><circle class="flake" cx="430" cy="0" r="1.3"/>
+        <circle class="flake" cx="-30" cy="5" r="1.5"/><circle class="flake" cx="-90" cy="-10" r="1.3"/>
+        <circle class="flake" cx="480" cy="10" r="1.6"/><circle class="flake" cx="135" cy="-20" r="1.1"/>
+      </g>
+
       <!-- grond -->
       <rect class="grass" x="-800" y="168" width="2000" height="10"/>
       <rect class="road" x="-800" y="176" width="2000" height="80"/>
       <path d="M-800,189 H1200" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-dasharray="16 14"/>
+
+      <!-- ijs op de weg (alleen als het koud is) -->
+      <g class="cold" fill="#e6f4fb">
+        <ellipse cx="-120" cy="183" rx="46" ry="3.5" opacity=".8"/><ellipse cx="40" cy="196" rx="38" ry="3" opacity=".7"/>
+        <ellipse cx="150" cy="182" rx="30" ry="2.5" opacity=".75"/><ellipse cx="236" cy="197" rx="52" ry="3.2" opacity=".7"/>
+        <ellipse cx="372" cy="184" rx="34" ry="2.6" opacity=".8"/><ellipse cx="520" cy="195" rx="44" ry="3" opacity=".7"/>
+        <path d="M30,195 h14 M226,196 h20 M362,183 h12" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+      </g>
+
+      <!-- ===== Boompje links van de bus: kaal (winter), jong blad (lente), vol (zomer), verkleurd (herfst) ===== -->
+      <g class="tree">
+        <!-- afgevallen blad op het gras (herfst) -->
+        <g class="s s-autumn">
+          <ellipse cx="8" cy="172" rx="3" ry="1.4" fill="#d9822b" transform="rotate(-20 8 172)"/>
+          <ellipse cx="18" cy="174" rx="3" ry="1.4" fill="#c4502a" transform="rotate(25 18 174)"/>
+          <ellipse cx="44" cy="173" rx="3" ry="1.4" fill="#e3b23c" transform="rotate(-35 44 173)"/>
+          <ellipse cx="54" cy="171" rx="3" ry="1.4" fill="#d9822b" transform="rotate(15 54 171)"/>
+          <ellipse cx="64" cy="174" rx="2.6" ry="1.2" fill="#c4502a" transform="rotate(-10 64 174)"/>
+          <ellipse cx="-6" cy="174" rx="3" ry="1.4" fill="#e3b23c" transform="rotate(30 -6 174)"/>
+          <ellipse cx="80" cy="172" rx="2.6" ry="1.2" fill="#d9822b" transform="rotate(-25 80 172)"/>
+        </g>
+        <g class="sway">
+          <!-- stam en takken -->
+          <path d="M25,173 Q28,150 27,128 L33,128 Q32,150 37,173 Z" fill="#7a5235"/>
+          <g stroke="#6b4630" stroke-linecap="round" fill="none">
+            <path d="M30,130 Q22,120 13,107 M30,130 Q31,114 30,97 M30,128 Q40,118 48,104" stroke-width="3.2"/>
+            <path d="M13,107 L5,97 M13,107 Q15,98 19,92 M30,97 L25,85 M30,97 Q34,90 37,83 M48,104 L56,95 M48,104 Q45,96 42,90" stroke-width="2"/>
+          </g>
+          <!-- sneeuw op de takken (winter en koud) -->
+          <g class="cold"><g class="s s-winter" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none">
+            <path d="M14,105 Q21,115 28,122 M29,99 Q30,108 29,114 M47,103 Q40,112 33,119 M5,95 L11,102.5 M25,84 L27.5,91 M56,94 L50.5,100"/>
+          </g></g>
+          <!-- lente: jonge, lichte blaadjes en wat bloesem -->
+          <g class="s s-spring">
+            <g fill="#a9d96b">
+              <circle cx="5" cy="96" r="4"/><circle cx="19" cy="91" r="4.5"/><circle cx="12" cy="104" r="3.5"/>
+              <circle cx="25" cy="84" r="4.5"/><circle cx="37" cy="82" r="4"/><circle cx="31" cy="96" r="3.5"/>
+              <circle cx="56" cy="94" r="4"/><circle cx="42" cy="89" r="4.5"/><circle cx="48" cy="103" r="3.5"/>
+            </g>
+            <g fill="#f8c1d2">
+              <circle cx="8" cy="93" r="1.8"/><circle cx="22" cy="88" r="1.8"/><circle cx="34" cy="80" r="1.8"/>
+              <circle cx="45" cy="87" r="1.8"/><circle cx="58" cy="91" r="1.8"/><circle cx="29" cy="94" r="1.6"/>
+            </g>
+          </g>
+          <!-- zomer: volle, donkergroene kroon -->
+          <g class="s s-summer">
+            <g fill="#4c9a3a">
+              <circle cx="14" cy="104" r="14"/><circle cx="46" cy="102" r="14"/><circle cx="30" cy="88" r="17"/>
+              <circle cx="22" cy="116" r="10"/><circle cx="39" cy="116" r="10"/><circle cx="30" cy="104" r="15"/>
+            </g>
+            <g fill="#68b64f">
+              <circle cx="24" cy="82" r="8"/><circle cx="10" cy="99" r="6"/><circle cx="41" cy="95" r="7"/>
+            </g>
+          </g>
+          <!-- herfst: nog een paar verkleurde bladeren aan de boom -->
+          <g class="s s-autumn">
+            <g fill="#d9822b"><circle cx="19" cy="92" r="5"/><circle cx="42" cy="89" r="4.5"/><circle cx="12" cy="104" r="3.5"/></g>
+            <g fill="#c4502a"><circle cx="31" cy="96" r="4"/><circle cx="55" cy="95" r="4"/></g>
+            <g fill="#e3b23c"><circle cx="26" cy="84" r="4"/><circle cx="48" cy="103" r="3.5"/><circle cx="6" cy="97" r="3"/></g>
+          </g>
+        </g>
+        <!-- vallende blaadjes (herfst) -->
+        <g class="s s-autumn">
+          <ellipse class="leaf-fall" cx="40" cy="100" rx="2.8" ry="1.3" fill="#d9822b"/>
+          <ellipse class="leaf-fall b" cx="16" cy="98" rx="2.8" ry="1.3" fill="#c4502a"/>
+        </g>
+      </g>
 
       <!-- ===== Bus: zilveren Sprinter W906 hoge camperbus, zijaanzicht, neus rechts ===== -->
       <g transform="translate(116 37) scale(.8)">
@@ -324,6 +441,12 @@
           <!-- witte luifelcassette langs de dakrand -->
           <rect x="16" y="40" width="236" height="9" rx="4.5" fill="#f5f7f9" stroke="#2b3440" stroke-width="1.6"/>
           <path d="M22,46.5 H246" stroke="#c9d0d7" stroke-width="1.2"/>
+          <!-- koud: sneeuw op zonnepaneel en dakluik, ijspegels onder de luifel -->
+          <g class="cold">
+            <path d="M37,34 Q40,27 48,29 Q55,24 64,28 Q72,25 80,29 Q90,24 100,28 Q110,25 118,29 Q128,24 138,28 Q148,25 156,29 Q166,26 173,34 Z" fill="#fff" stroke="#c8dbe8" stroke-width="1"/>
+            <path d="M188,40 Q190,30 202,29 H213 Q225,30 228,40 Q220,36 208,37 Q196,36 188,40 Z" fill="#fff" stroke="#c8dbe8" stroke-width="1"/>
+            <path d="M30,49 l2.5,9 2.5,-9 Z M58,49 l2,6 2,-6 Z M84,49 l2.5,10 2.5,-10 Z M118,49 l2,7 2,-7 Z M160,49 l2.5,9 2.5,-9 Z M196,49 l2,6 2,-6 Z M226,49 l2.5,8 2.5,-8 Z" fill="#e3f3fc" stroke="#a9cde3" stroke-width=".8" stroke-linejoin="round"/>
+          </g>
           <!-- deuren: schuifdeur en bestuurdersdeur -->
           <path d="M146,52 V160 M238,50 V160" stroke="#2b3440" stroke-width="1.3" opacity=".55"/>
           <path d="M146,58 H236" stroke="#2b3440" stroke-width="1" opacity=".25"/>
@@ -382,6 +505,24 @@
           <circle cx="70" cy="172" r="21" fill="#20252c"/><circle cx="70" cy="172" r="12.5" fill="#a9b0b8" stroke="#7c848e" stroke-width="1.5"/><circle cx="77.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="73.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="66.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="63.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="66.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="73.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="70" cy="172" r="4" fill="#d5dade" stroke="#7c848e" stroke-width="1"/>
           <circle cx="272" cy="172" r="21" fill="#20252c"/><circle cx="272" cy="172" r="12.5" fill="#a9b0b8" stroke="#7c848e" stroke-width="1.5"/><circle cx="279.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="275.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="268.5" cy="178.1" r="1.6" fill="#5c6470"/><circle cx="265.0" cy="172.0" r="1.6" fill="#5c6470"/><circle cx="268.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="275.5" cy="165.9" r="1.6" fill="#5c6470"/><circle cx="272" cy="172" r="4" fill="#d5dade" stroke="#7c848e" stroke-width="1"/>
         </g>
+
+        <!-- koud: dikke rood-witte sjaal over het dak, tussen schuifdeur en bestuurdersdeur naar beneden
+             (staat na de wielen, zodat hij over de wielkast heen valt; beweegt mee met de bus) -->
+        <g class="bob"><g class="cold" stroke-linejoin="round">
+          <!-- tweede slip: hangt schuin naar voren over de bestuurdersdeur en wappert -->
+          <g class="scarf-flap">
+            <path d="M244,86 Q274,102 282,142 L258,152 Q256,120 236,100 Z" fill="#c43636" stroke="#2b3440" stroke-width="2"/>
+            <path d="M253,104 L267,96 M259,124 L275,117" stroke="#fff" stroke-width="3.2"/>
+            <path d="M261,151 v8 M265,149.5 v8 M269,148 v8 M273,146.5 v8 M277,145 v8" stroke="#c43636" stroke-width="2.6" stroke-linecap="round"/>
+          </g>
+          <!-- hoofdbaan: over het dak en recht naar beneden, lekker dik en een beetje golvend -->
+          <path d="M212,38 Q232,25 254,35 L251,62 Q255,92 249,122 L247,152 L216,154 Q211,122 216,92 Q210,62 212,38 Z" fill="#d23c3c" stroke="#2b3440" stroke-width="2.2"/>
+          <path d="M213,46 Q232,37 253,45" fill="none" stroke="#a82c2c" stroke-width="2.2"/>
+          <path d="M222,44 V148 M231,41 V150 M240,42 V150" stroke="#b83030" stroke-width="1.2" opacity=".6"/>
+          <path d="M214,66 Q232,62 252,66 M214,74 Q232,70 252,74 M215,128 Q232,124 249,128 M215,136 Q232,132 249,136" fill="none" stroke="#fff" stroke-width="4"/>
+          <!-- franjes -->
+          <path d="M219,154 v9 M224,154 v9 M229,154 v9 M234,154 v9 M239,153 v9 M244,153 v9" stroke="#d23c3c" stroke-width="2.8" stroke-linecap="round"/>
+        </g></g>
 
         <!-- Zzz -->
         <g class="m m-sleeping" fill="#e9eefb" font-family="system-ui, sans-serif" font-weight="800">
@@ -483,6 +624,30 @@
     }
   };
 
+  // Kou: onder 3 °C krijgt de bus het koud, pas vanaf 4 °C weer niet (zodat hij rond 3 °C niet
+  // steeds wisselt). Zonder temperatuurmeting is het nooit koud.
+  const COLD_BELOW = 3, WARM_FROM = 4;
+  let cold = false;
+  function isCold(temp, wasCold) {
+    if (temp === null || temp === undefined) return false;
+    return wasCold ? temp < WARM_FROM : temp < COLD_BELOW;
+  }
+
+  // Seizoen voor het boompje (meteorologisch, noordelijk halfrond): dec-feb winter, mrt-mei lente,
+  // jun-aug zomer, sep-nov herfst.
+  function season(date) {
+    return ['winter', 'winter', 'spring', 'spring', 'spring', 'summer',
+            'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter'][date.getMonth()];
+  }
+  // Voor een demonstratie: ?seizoen=winter|lente|zomer|herfst en/of ?temp=-2 in de adresbalk.
+  const params = new URLSearchParams(location.search);
+  const seasonNames = { winter: 'winter', lente: 'spring', zomer: 'summer', herfst: 'autumn' };
+  const demoSeason = seasonNames[params.get('seizoen')] || null;
+  const demoTemp = params.has('temp') && isFinite(parseFloat(params.get('temp'))) ? parseFloat(params.get('temp')) : null;
+  function updateSeason() { scene.dataset.season = demoSeason || season(new Date()); }
+  updateSeason();
+  setInterval(updateSeason, 60 * 60 * 1000);
+
   function row(label, value) {
     return el('div', {}, el('dt', { textContent: label }), el('dd', { textContent: value, title: value }));
   }
@@ -542,9 +707,13 @@
       const s = await api('status');
       setOnline(true);
       scene.dataset.mood = s.mood;
+      if (demoTemp !== null && s.battery) s.battery.temperature = demoTemp;
+      const temp = s.battery ? s.battery.temperature : null;
+      cold = isCold(temp, cold);
+      scene.dataset.cold = cold;
       const [title, text] = (moods[s.mood] || moods.awake)(s);
       $('mood-title').textContent = title;
-      $('mood-text').textContent = text;
+      $('mood-text').textContent = cold ? text + ' Brr, het is koud: ' + num(temp, 0) + ' °C.' : text;
       renderBattery(s);
       renderSolar(s);
       $('logout').hidden = !s.user;
